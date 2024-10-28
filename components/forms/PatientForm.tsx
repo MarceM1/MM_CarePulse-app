@@ -10,7 +10,7 @@ import CustomFormField from "../CustomFormField"
 import 'react-phone-number-input/style.css'
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
-import { PatientFormValidation } from "@/lib/validation"
+import {  UserFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
 import { createUser } from "@/lib/actions/patient.actions"
 
@@ -31,8 +31,8 @@ const PatientForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const form = useForm<z.infer<typeof PatientFormValidation>>({
-    resolver: zodResolver(PatientFormValidation),
+  const form = useForm<z.infer<typeof UserFormValidation>>({
+    resolver: zodResolver(UserFormValidation),
     defaultValues: {
       name: "",
       email: '',
@@ -41,23 +41,23 @@ const PatientForm = () => {
   })
 
 
-  async function onSubmit({ name, email, phone }: z.infer<typeof PatientFormValidation>) {
+  const  onSubmit = async ({ name, email, phone }: z.infer<typeof UserFormValidation>) => {
    console.log(name, email, phone)
 
     setIsLoading(true)
 
     try {
-      //console.log("inicio del try en patientForm")
+     console.log("inicio del try en patientForm")
 
        const userData = {
          name, email, phone
        }
 
-       //console.log("userData: ", userData)
+       console.log("userData: ", userData)
 
        const user = await createUser(userData)
 
-       //console.log("user: ", user)
+       console.log("user: ", user)
 
 
       if(user) router.push(`/patients/${user.$id}/register`)
@@ -107,7 +107,7 @@ const PatientForm = () => {
           iconAlt='phone number'
         />
 
-        <SubmitButton className="" isLoading={isLoading} >
+        <SubmitButton isLoading={isLoading} >
           Get Started
         </SubmitButton>
       </form>

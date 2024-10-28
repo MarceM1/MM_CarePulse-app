@@ -10,13 +10,13 @@ import {
 import CustomFormField from "../CustomFormField"
 import 'react-phone-number-input/style.css'
 import SubmitButton from "../SubmitButton"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { PatientFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
-import {  registerPatient } from "@/lib/actions/patient.actions"
+import { registerPatient } from "@/lib/actions/patient.actions"
 import { FormFieldType } from "./PatientForm"
 import { RadioGroup } from "../ui/radio-group"
-import { Doctors, GenderOptions, IdentificationTypes, PatientFormDefaultValues } from "@/constants"
+import { Doctors, GenderOptions, IdentificationTypes } from "@/constants"
 import { RadioGroupItem } from "../ui/radio-group"
 import { Label } from "../ui/label"
 import { SelectItem } from "../ui/select"
@@ -35,7 +35,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 	const form = useForm<z.infer<typeof PatientFormValidation>>({
 		resolver: zodResolver(PatientFormValidation),
 		defaultValues: {
-			...PatientFormDefaultValues,
+
 			name: "",
 			email: '',
 			phone: ''
@@ -43,44 +43,67 @@ const RegisterForm = ({ user }: { user: User }) => {
 	})
 
 
-	async function onSubmit(values: z.infer<typeof PatientFormValidation>) {
-		console.log('values from registerForm',values)
+	const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
+		console.log("Inicio de submit")
+		console.log("errores de form:",  form.formState.errors);
+		setIsLoading(true);
 
-		setIsLoading(true)
-
+		// Store file info in form data as
 		let formData;
-
-		if(values.identificationDocument && values.identificationDocument.length > 0){
-			const blobFile = new Blob([values.identificationDocument[0]],{
-				type: values.identificationDocument[0].type
-			})
+		if (
+			values.identificationDocument &&
+			values.identificationDocument?.length > 0
+		) {
+			const blobFile = new Blob([values.identificationDocument[0]], {
+				type: values.identificationDocument[0].type,
+			});
 
 			formData = new FormData();
-			formData.append('blobFile', blobFile);
-			formData.append('fileName', values.identificationDocument[0].name)
+			formData.append("blobFile", blobFile);
+			formData.append("fileName", values.identificationDocument[0].name);
 		}
 
 		try {
-			const patientData = {
-				...values,
+			const patient = {
 				userId: user.$id,
+				name: values.name,
+				email: values.email,
+				phone: values.phone,
 				birthDate: new Date(values.birthDate),
-				identificationDocument: formData,
+				gender: values.gender,
+				address: values.address,
+				occupation: values.occupation,
+				emergencyContactName: values.emergencyContactName,
+				emergencyContactNumber: values.emergencyContactNumber,
+				primaryPhysician: values.primaryPhysician,
+				insuranceProvider: values.insuranceProvider,
+				insurancePolicyNumber: values.insurancePolicyNumber,
+				allergies: values.allergies,
+				currentMedication: values.currentMedication,
+				familyMedicalHistory: values.familyMedicalHistory,
+				pastMedicalHistory: values.pastMedicalHistory,
+				identificationType: values.identificationType,
+				identificationNumber: values.identificationNumber,
+				identificationDocument: values.identificationDocument
+					? formData
+					: undefined,
+				privacyConsent: values.privacyConsent,
+			};
+
+			const newPatient = await registerPatient(patient);
+
+			if (newPatient) {
+				router.push(`/patients/${user.$id}/new-appointment`);
 			}
-
-			//@ts-ignore
-			const patient = await registerPatient(patientData);
-			console.log('patient: ', patient)
-
-			if(patient) router.push(`/patients/${user.$id}/new-appointment`)
 		} catch (error) {
-			console.log('Error en onSubmit del PatientForm: ', error)
-		} finally {
-			setIsLoading(false)
+			console.log(error);
 		}
 
-	}
-
+		setIsLoading(false);
+	};
+	useEffect(() => {
+		console.log("Form error: ", form.formState.errors);
+	}, [form.formState.errors]);
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12 flex-1">
@@ -193,7 +216,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 					<CustomFormField
 						fieldType={FormFieldType.PHONE_INPUT}
 						control={form.control}
-						name='emercencyContactNumber'
+						name='emergencyContactNumber'
 						label='Emergency contact number'
 						placeholder='(555)123-4567'
 					/>
@@ -321,21 +344,21 @@ const RegisterForm = ({ user }: { user: User }) => {
 					</div>
 				</section>
 
-				<CustomFormField 
+				<CustomFormField
 					fieldType={FormFieldType.CHECKBOX}
-					control= {form.control}
+					control={form.control}
 					name='treatmentConsent'
 					label='I consent to treatment'
 				/>
-				<CustomFormField 
+				<CustomFormField
 					fieldType={FormFieldType.CHECKBOX}
-					control= {form.control}
+					control={form.control}
 					name='disclosureConsent'
 					label='I consent to disclosure of information'
 				/>
-				<CustomFormField 
+				<CustomFormField
 					fieldType={FormFieldType.CHECKBOX}
-					control= {form.control}
+					control={form.control}
 					name='privacyConsent'
 					label='I consent to privacy policy'
 				/>

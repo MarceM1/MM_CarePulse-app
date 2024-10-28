@@ -10,8 +10,9 @@ import CustomFormField from "../CustomFormField"
 import 'react-phone-number-input/style.css'
 import SubmitButton from "../SubmitButton"
 import { useState } from "react"
-import { UserFormValidation } from "@/lib/validation"
+import { PatientFormValidation } from "@/lib/validation"
 import { useRouter } from "next/navigation"
+import { createUser } from "@/lib/actions/patient.actions"
 
 export enum FormFieldType {
   INPUT = 'input',
@@ -30,8 +31,8 @@ const PatientForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const form = useForm<z.infer<typeof UserFormValidation>>({
-    resolver: zodResolver(UserFormValidation),
+  const form = useForm<z.infer<typeof PatientFormValidation>>({
+    resolver: zodResolver(PatientFormValidation),
     defaultValues: {
       name: "",
       email: '',
@@ -40,19 +41,27 @@ const PatientForm = () => {
   })
 
 
-  async function onSubmit({ name, email, phone }: z.infer<typeof UserFormValidation>) {
-    // console.log(values)
+  async function onSubmit({ name, email, phone }: z.infer<typeof PatientFormValidation>) {
+   console.log(name, email, phone)
 
     setIsLoading(true)
 
     try {
-      // const userData = {
-      //   name, email, phone
-      // }
+      //console.log("inicio del try en patientForm")
 
-      // const user = await createSecureServer(userData)
+       const userData = {
+         name, email, phone
+       }
 
-      // if(user) router.push(`/patients/${user.$id}/register`)
+       //console.log("userData: ", userData)
+
+       const user = await createUser(userData)
+
+       //console.log("user: ", user)
+
+
+      if(user) router.push(`/patients/${user.$id}/register`)
+
     } catch (error) {
       console.log('Error en onSubmit del PatientForm: ', error)
     } finally {
@@ -95,7 +104,7 @@ const PatientForm = () => {
           name='phone'
           label='Phone Number'
           placeholder='(555)123-4567'
-          iconAlt='email'
+          iconAlt='phone number'
         />
 
         <SubmitButton className="" isLoading={isLoading} >

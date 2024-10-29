@@ -13,6 +13,7 @@ import {
 } from "../appwrite.config";
 import { parseStringify } from "../utils";
 import { InputFile } from "node-appwrite/file";
+
 // Create User
 export const createUser = async (user: CreateUserParams) => {
   try {
@@ -89,3 +90,20 @@ export const registerPatient = async ({
     console.log("Error in registerPatient: ", error);
   }
 };
+
+// Get Patient
+
+export const getPatient = async (userId: string) => {
+  try {
+    const patients = await databases.listDocuments(
+      DATABASE_ID!,
+      PATIENT_COLLECTION_ID!,
+      [Query.equal("userId", userId)]
+    );
+    return parseStringify(patients.documents[0]);
+  } catch (error) {
+    console.log("getPatient error: ", error);
+  }
+};
+
+

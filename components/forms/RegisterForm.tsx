@@ -35,7 +35,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 	const form = useForm<z.infer<typeof PatientFormValidation>>({
 		resolver: zodResolver(PatientFormValidation),
 		defaultValues: {
-
+			...PatientFormValidation,
 			name: "",
 			email: '',
 			phone: ''
@@ -88,6 +88,8 @@ const RegisterForm = ({ user }: { user: User }) => {
 					? formData
 					: undefined,
 				privacyConsent: values.privacyConsent,
+				treatmentConsent: values.treatmentConsent,
+				disclosureConsent: values.disclosureConsent,
 			};
 
 			const newPatient = await registerPatient(patient);
